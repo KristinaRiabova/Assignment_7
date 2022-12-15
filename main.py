@@ -13,6 +13,7 @@ country = args.country
 year = args.year
 pathOutput = args.output
 
+
 #python main.py --path data.tsv --mode medals --country USA --year 1972
 #python main.py --path data.tsv --mode total --year 1972
 
