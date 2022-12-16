@@ -6,13 +6,14 @@ parser.add_argument("--mode")
 parser.add_argument("--country", required=False)
 parser.add_argument("--year")
 parser.add_argument("--output", required=False)
+parser.add_argument("-overall", type=str, required=False, nargs='*')
 args = parser.parse_args()
 path = args.path
 mode = args.mode
 country = args.country
 year = args.year
 pathOutput = args.output
-
+countries = args.overall
 
 #python main.py --path data.tsv --mode medals --country USA --year 1972
 #python main.py --path data.tsv --mode total --year 1972
@@ -125,10 +126,64 @@ for i in range(1896, 2016, 4):
     yearsOlymp.append(i)
 
 
+def overallFunc(countries):
+    dict = {
+
+    }
+
+    for countryOverall in countries:
+        key = countryOverall
+        dict.setdefault(key, [])
+        dict[key].append([])
+        dict[key].append([])
+
+    def findIndex(dictionary, needYear, key):
+        for countr in dictionary:
+            i = 0
+            if (countr == key):
+                for year in dictionary[countr][0]:
+                    if needYear == year:
+                        return i
+                    i += 1
+
+    with open(path, 'r') as file:
+        file.readline()
+        line = file.readline()
+        while line:
+            splitLine = line.split('\t')
+            yearOverall = splitLine[9]
+            if splitLine[-1][:-1] != "NA":
+                if splitLine[-9] in countries:
+                    key = splitLine[-9]
+                    if yearOverall not in dict[key][0]:
+                        dict[key][0].append(yearOverall)
+                        dict[key][1].append(0)
+                        dict[key][1][findIndex(dict,yearOverall,key)] += 1
+                    elif yearOverall in dict[key][0]:
+                        dict[key][1][findIndex(dict,yearOverall,key)] += 1
+
+            line = file.readline()
+
+    def maxMedals(dictionary):
+        for countr in dictionary:
+            i = 0
+            j = 0
+            maxMedal = dictionary[countr][1][0]
+            for medal in dictionary[countr][1]:
+                if (maxMedal <= medal):
+                    maxMedal = medal
+                    j = i
+                i+=1
+            print(countr," max medals in ",dictionary[countr][0][j]," : ",maxMedal)
+
+    return print(maxMedals(dict))
+
 if mode == 'total':
     total_medals(year)
-else:
+elif mode == "medals":
     countMedals(medals)
+elif countries != None:
+    overallFunc(countries)
 
 if (pathOutput != None):
     fileOutput.write(f'Summary medals : {countMedals(medals)} \n')
