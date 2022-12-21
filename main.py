@@ -2,9 +2,9 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--path")
-parser.add_argument("--mode")
+parser.add_argument("--mode", required=False)
 parser.add_argument("--country", required=False)
-parser.add_argument("--year")
+parser.add_argument("--year", required=False)
 parser.add_argument("--output", required=False)
 parser.add_argument("-overall", type=str, required=False, nargs='*')
 args = parser.parse_args()
@@ -77,17 +77,14 @@ def countMedals(medals):
             fileOutput.write(f'that year {country} had less than 10 medals \n')
         print('that year', country, 'had less than 10 medals')
 
-    return print(
-        f'{gold} gold medals, {silver} silver medals, {bronze} bronze medals, total : {gold + bronze + silver}')
+    return print(f'{gold} gold medals, {silver} silver medals, {bronze} bronze medals, total : {gold + bronze + silver}')
 
 
 def total_medals(year):
     if int(year) not in yearsOlymp:
         print('No olymp this year')
         quit()
-    dict = {
-
-    }
+    dict = {}
     with open(path, 'r') as file:
         file.readline()
         line = file.readline()
@@ -127,9 +124,7 @@ for i in range(1896, 2016, 4):
 
 
 def overallFunc(countries):
-    dict = {
-
-    }
+    dict = {}
 
     for countryOverall in countries:
         key = countryOverall
@@ -178,12 +173,90 @@ def overallFunc(countries):
 
     return print(maxMedals(dict))
 
+def interactiveFunc():
+    while True:
+        dict = {}
+        dictCountries = {}
+        dictMedals = {}
+
+        country = input("Input country")
+        with open(path, 'r') as file: # открываем файл на чтение
+            file.readline() # читаем заголовочную строку
+            line = file.readline() # читаем первую строку с данными
+            while line: # пока есть строки в файле
+                splitLine = line.split('\t') # сплит по табу
+                if country in splitLine[-9] or country in splitLine[-8]:
+                    if splitLine[-1][:-1] != "NA":
+                        key = splitLine[9]
+                        dict.setdefault(key)
+                        dictCountries.setdefault(key)
+                        if (dict[key] == None):
+                            dict[key] = 1
+                            dictCountries[key] = splitLine[-4]
+                        else:
+                            dict[key] += 1
+                            dictCountries[key] = splitLine[-4]
+
+                        dictMedals.setdefault(key, [])
+
+                        if (dictMedals[key] == []):
+                            dictMedals[key].append(0)
+                            dictMedals[key].append(0)
+                            dictMedals[key].append(0)
+
+                        if splitLine[-1][:-1] == "Gold":
+                            dictMedals[key][0] += 1
+                        elif splitLine[-1][:-1] == "Silver":
+                            dictMedals[key][1] += 1
+                        elif splitLine[-1][:-1] == "Bronze":
+                            dictMedals[key][2] += 1
+
+
+                line = file.readline()
+
+            firstYear = int(key)
+            maxYear = key
+            countMaxYear = dict[key]
+            minYear = key
+            countMinYear = dict[key]
+            placeOfOlymp = dictCountries[key]
+
+            for key in dict:
+                if firstYear >= int(key):
+                    firstYear = int(key)
+                    placeOfOlymp = dictCountries[key]
+                if (dict[key] >= countMaxYear):
+                    maxYear = key
+                    countMaxYear = dict[key]
+                if (dict[key] <= countMinYear):
+                    minYear = key
+                    countMinYear = dict[key]
+
+        print("First Olymp : ", firstYear, ". Place : ", placeOfOlymp)
+        print("Max medals Olymp : ", maxYear, ". Count medals : ", countMaxYear)
+        print("Min medals Olymp : ", minYear, ". Count medals : ", countMinYear)
+
+        for key in dictMedals:
+            print(key," year : ", dictMedals[key][0], " gold medals, ", dictMedals[key][1], " silver medals, ",
+                  dictMedals[key][2], " bronze medals")
+
+        retry = input("Again ? y/n")
+        retry = retry.lower()
+        if retry == "y":
+            continue
+        elif retry == "n":
+            quit()
+        else:
+            print("error")
+
 if mode == 'total':
     total_medals(year)
 elif mode == "medals":
     countMedals(medals)
 elif countries != None:
     overallFunc(countries)
+elif mode == 'interactive':
+    interactiveFunc()
 
 if (pathOutput != None):
     fileOutput.write(f'Summary medals : {countMedals(medals)} \n')
